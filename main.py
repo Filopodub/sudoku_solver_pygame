@@ -1,6 +1,7 @@
 import pygame
 from motorx import Motorx
 from motory import Motory
+from pen import Pen
 
 # Setup display
 pygame.init()
@@ -22,9 +23,10 @@ run = True
 
 motorx = Motorx()
 motory = Motory(motorx.x)
+pen = Pen(motorx.x, motory.y)
 
 # Movement speed
-move_speed = 5
+move_speed = 1
 
 while run:
     clock.tick(FPS)
@@ -32,9 +34,9 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pos = pygame.mouse.get_pos()
-            print(pos)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                pen.toggle_active()  # Toggle pen activation on spacebar press
         
     # Get keys pressed for continuous movement
     keys = pygame.key.get_pressed()
@@ -54,13 +56,23 @@ while run:
     # Ensure Motory always has the same x coordinate as Motor
     motory.x = motorx.x    
 
-    win.fill(WHITE)
-    # Blit the sudoku image onto the window
-    win.blit(sudoku_img, (100, 100))
+    # Update Pen's position to match MotorX and Motory
+    pen.update_position(motorx.x, motory.y)
 
+    # Fill the window with white before drawing
+    win.fill(WHITE)  
+
+    # Read the color at the pen's position and print it
+    win.blit(sudoku_img, (100, 100))
+    pen_color = pen.read(win)
+    print(f"Color: {'White' if pen_color == 0 else 'Black' if pen_color == 1 else 'Other'}")
+    
+    # Draw everything
     motorx.draw(win)
     motory.draw(win)
-    
+    pen.draw(win)
+
+        
     # Update the display
     pygame.display.update()
 
